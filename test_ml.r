@@ -563,6 +563,34 @@ training <- training[, keep_index]
 
 #now do the same for test
      
-     
-modFit <- train(classe ~ ., method="rf",data = na.omit(training))
-pred_lda <- predict(modFit, training)
+
+#now do the same for test
+keep_index <- !sapply(testing, function(x) any(is.na(x)))
+testing <- testing[, keep_index]
+keep_index <- sapply(colnames(testing), function(x) !grepl("X|time|window",x))
+testing <- testing[, keep_index]
+dim(testing)
+
+#Now to move to a Meeseek's box
+#Create train and test data from training
+index_train <- createDataPartition(training$classe, p = 0.7, list=FALSE)
+training1 <- training[index_train, ]
+testing1 <- training[-index_train, ]
+
+#random forest, decision trees, naive bayes, lda, gbm, pca
+
+modFit <- train(classe ~., method = "lda", data = training1)
+pred_lda <- predict(modFit, testing1)
+confusionMatrix(pred_lda, testing1$classe)
+
+modFit_rf <- train(classe ~ ., method = "rf", data=training1, trControl=trainControl(method="cv", 5), ntree=250)
+pred_rf <- predict(modFit_rf, testing1)
+confusionMatrix(pred_rf, testing1$classe)
+
+modFit_gbm <- train(classe ~ ., method = "gbm", data=training1 )
+pred_gbm <- predict(modFit_gbm, testing1)
+confusionMatrix(pred_rpart, testing1$classe)
+
+modFit_rpart <- train(classe)
+
+names(getModelInfo())
